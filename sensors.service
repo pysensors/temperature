@@ -1,0 +1,14 @@
+[Unit]
+Description=Sensors
+After=network.target
+
+[Service]
+ExecStart=/home/pi/project/v1/start
+WorkingDirectory=/home/pi/project/v1
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
