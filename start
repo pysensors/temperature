@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PYTHONPATH=export PYTHONPATH=/home/pi/barometer:/home/pi/light:$PYTHONPATH
+export PYTHONPATH=/home/pi/temperature:$PYTHONPATH
 
-cd /home/pi/project/v1
+cd /home/pi/temperature
 python main.py

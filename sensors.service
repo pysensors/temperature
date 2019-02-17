@@ -3,8 +3,8 @@ Description=Sensors
 After=network.target
 
 [Service]
-ExecStart=/home/pi/project/v1/start
-WorkingDirectory=/home/pi/project/v1
+ExecStart=/home/pi/temperature/start
+WorkingDirectory=/home/pi/temperature
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
