@@ -10,7 +10,7 @@ import json
 
 
 
-def sensors(mqtt_q, ,stem=stem, delay=60):
+def sensors(mqtt_q, name, delay=60):
     logger = logging.getLogger('sensors')
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
@@ -27,8 +27,8 @@ def sensors(mqtt_q, ,stem=stem, delay=60):
         now = datetime.datetime.now().isoformat()
         temperature, pressure, humidity = bme280.readBME280All()
 
-        payload_t = '{0}_{1}_{2}'.format(now, stem, temperature)
-        payload_p = '{0}_{1}_{2}'.format(now, stem, pressure)
+        payload_t = '{0}_{1}_{2}'.format(now, name, temperature)
+        payload_p = '{0}_{1}_{2}'.format(now, name, pressure)
 
         temp_m = {'topic': 'temperature', 'payload': payload_t}
         pressure_m = {'topic': 'pressure', 'payload': payload_p}
@@ -79,11 +79,14 @@ def main():
     f = open('config.json','r')
     config = json.load(f)
 
+    broker = config['broker']
+    name = config['name']
+
     mqtt_q = Queue.Queue()
 
     sensors_t = threading.Thread(name='sensors',
                                  target=sensors,
-                                 args=(mqtt_q, stem))
+                                 args=(mqtt_q, name))
 
     dispatcher_t = threading.Thread(name='dispatcher',
                                     target=dispatcher,
