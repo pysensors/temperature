@@ -6,12 +6,11 @@ import paho.mqtt.client as mqtt
 import datetime
 import bme280
 import platform
-
-BRKR = '192.168.1.147'
-STEM = 'house/shed'
+import json
 
 
-def sensors(mqtt_q, delay=60):
+
+def sensors(mqtt_q, ,stem=stem, delay=60):
     logger = logging.getLogger('sensors')
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
@@ -28,21 +27,18 @@ def sensors(mqtt_q, delay=60):
         now = datetime.datetime.now().isoformat()
         temperature, pressure, humidity = bme280.readBME280All()
 
-        payload_t = '{0}_{1}_{2}'.format(now, STEM, temperature)
-        payload_p = '{0}_{1}_{2}'.format(now, STEM, pressure)
-        payload_h = '{0}_{1}_{2}'.format(now, STEM, humidity)
+        payload_t = '{0}_{1}_{2}'.format(now, stem, temperature)
+        payload_p = '{0}_{1}_{2}'.format(now, stem, pressure)
 
         temp_m = {'topic': 'temperature', 'payload': payload_t}
         pressure_m = {'topic': 'pressure', 'payload': payload_p}
-        humidity_m = {'topic': 'humidity', 'payload': payload_h}
 
         mqtt_q.put(temp_m)
         mqtt_q.put(pressure_m)
-        mqtt_q.put(humidity_m)
         time.sleep(delay)
 
 
-def dispatcher(mqtt_q):
+def dispatcher(mqtt_q, broker):
     logger = logging.getLogger('dispatcher')
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
@@ -55,7 +51,7 @@ def dispatcher(mqtt_q):
     logger.info('started')
 
     client = mqtt.Client(platform.node())
-    client.connect(BRKR)
+    client.connect(broker)
     client.loop_start()
 
     while True:
@@ -80,15 +76,18 @@ def main():
     logger.addHandler(ch)
     logger.info('started')
 
+    f = open('config.json','r')
+    config = json.load(f)
+
     mqtt_q = Queue.Queue()
 
     sensors_t = threading.Thread(name='sensors',
                                  target=sensors,
-                                 args=(mqtt_q,))
+                                 args=(mqtt_q, stem))
 
     dispatcher_t = threading.Thread(name='dispatcher',
                                     target=dispatcher,
-                                    args=(mqtt_q,))
+                                    args=(mqtt_q, broker))
 
     sensors_t.start()
     dispatcher_t.start()
